@@ -5,6 +5,7 @@ import Modal from '../components/Modal';
 import { PromptEntry, Tag } from '../types';
 import { Link } from 'react-router-dom';
 import { getOptimizedImageUrl } from '../utils/imageOptimizer';
+import LazyImage from '../components/LazyImage';
 
 const Home: React.FC = () => {
     const [prompts, setPrompts] = useState<PromptEntry[]>([]);
@@ -123,7 +124,11 @@ const Home: React.FC = () => {
                         >
                             {entry.image_url ? (
                                 <div className="relative">
-                                    <img src={getOptimizedImageUrl(entry.image_url, 500)} alt={entry.summary} className="w-full h-auto object-cover" loading="lazy" />
+                                    <LazyImage
+                                        src={getOptimizedImageUrl(entry.image_url, 500)}
+                                        alt={entry.summary}
+                                        className="w-full h-auto"
+                                    />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                                         <p className="text-white text-sm font-medium line-clamp-2">{entry.summary}</p>
                                         <div className="flex gap-2 mt-2">
