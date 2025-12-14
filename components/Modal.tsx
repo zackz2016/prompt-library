@@ -26,7 +26,7 @@ const Modal: React.FC<ModalProps> = ({ entry, onClose }) => {
       />
 
       {/* Content */}
-      <div className="relative bg-white rounded-2xl w-full max-w-5xl h-[85vh] flex overflow-hidden shadow-2xl animate-fade-in-up">
+      <div className="relative bg-white rounded-2xl w-full max-w-5xl h-[90vh] md:h-[85vh] flex flex-col md:flex-row overflow-hidden shadow-2xl animate-fade-in-up">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-10 p-2 bg-white/80 hover:bg-white rounded-full text-gray-500 hover:text-gray-800 transition-colors"
@@ -35,7 +35,7 @@ const Modal: React.FC<ModalProps> = ({ entry, onClose }) => {
         </button>
 
         {/* Left: Image (Scrollable if needed, or fit) */}
-        <div className="w-1/2 bg-gray-100 flex items-center justify-center p-8 overflow-hidden relative">
+        <div className="w-full md:w-1/2 h-[50vh] md:h-full bg-gray-100 flex items-center justify-center p-2 md:p-8 overflow-hidden relative shrink-0">
           {entry.image_url ? (
             <img
               src={getOptimizedImageUrl(entry.image_url, 1200)}
@@ -51,7 +51,7 @@ const Modal: React.FC<ModalProps> = ({ entry, onClose }) => {
         </div>
 
         {/* Right: Info */}
-        <div className="w-1/2 p-8 overflow-y-auto custom-scrollbar flex flex-col">
+        <div className="w-full md:w-1/2 p-4 md:p-8 overflow-y-auto custom-scrollbar flex flex-col">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-800 leading-tight mb-2">
               {entry.summary || "Untitled Prompt"}
