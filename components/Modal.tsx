@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Copy, Check } from 'lucide-react';
 import { PromptEntry } from '../types';
+import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
 interface ModalProps {
   entry: PromptEntry;
@@ -37,7 +38,7 @@ const Modal: React.FC<ModalProps> = ({ entry, onClose }) => {
         <div className="w-1/2 bg-gray-100 flex items-center justify-center p-8 overflow-hidden relative">
           {entry.image_url ? (
             <img
-              src={entry.image_url}
+              src={getOptimizedImageUrl(entry.image_url, 1200)}
               alt={entry.summary}
               className="max-w-full max-h-full object-contain shadow-lg rounded-lg"
             />
