@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, Loader2, Save, Image as ImageIcon } from 'lucide-react';
 import { GenerationType, Tag, PromptEntry } from '../types';
 import { analyzePromptText } from '../services/geminiService';
+import { supabase } from '../services/supabaseClient';
 
 interface InputAreaProps {
   availableTags: Tag[];
@@ -14,6 +15,7 @@ const InputArea: React.FC<InputAreaProps> = ({ availableTags, onAddTag, onSave }
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [genType, setGenType] = useState<GenerationType>(GenerationType.TextToImage);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<Blob | null>(null);
   const [imageRatio, setImageRatio] = useState<string>('1:1');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isAddingTag, setIsAddingTag] = useState(false);
@@ -65,6 +67,10 @@ const InputArea: React.FC<InputAreaProps> = ({ availableTags, onAddTag, onSave }
           // Compress to JPEG with 0.7 quality
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
           setImagePreview(compressedDataUrl);
+
+          canvas.toBlob((blob) => {
+            if (blob) setImageFile(blob);
+          }, 'image/jpeg', 0.7);
         } else {
           // Fallback if canvas fails
           setImagePreview(objectUrl);
@@ -113,11 +119,28 @@ const InputArea: React.FC<InputAreaProps> = ({ availableTags, onAddTag, onSave }
         analysis.summary = "Image-based prompt";
       }
 
+      let finalImageUrl = imagePreview;
+
+      if (imageFile) {
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from('prompts')
+          .upload(fileName, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage
+          .from('prompts')
+          .getPublicUrl(fileName);
+
+        finalImageUrl = publicUrlData.publicUrl;
+      }
+
       const entry: Omit<PromptEntry, 'id' | 'created_at'> = {
         original_prompt: promptText,
         translated_prompt: /[\u4e00-\u9fa5]/.test(promptText) ? analysis.en : analysis.cn,
         summary: analysis.summary,
-        image_url: imagePreview,
+        image_url: finalImageUrl,
         aspect_ratio: imageRatio,
         tags: selectedTags,
         generation_type: genType,
@@ -128,6 +151,7 @@ const InputArea: React.FC<InputAreaProps> = ({ availableTags, onAddTag, onSave }
       // Reset Form
       setPromptText('');
       setImagePreview(null);
+      setImageFile(null);
       setSelectedTags([]);
       if (fileInputRef.current) fileInputRef.current.value = '';
 
@@ -159,8 +183,8 @@ const InputArea: React.FC<InputAreaProps> = ({ availableTags, onAddTag, onSave }
                 key={tag.id}
                 onClick={() => toggleTag(tag.name)}
                 className={`px-3 py-1 text-xs rounded-full border transition-colors ${selectedTags.includes(tag.name)
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-blue-400'
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue-400'
                   }`}
               >
                 #{tag.name}
